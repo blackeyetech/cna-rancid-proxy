@@ -53,7 +53,14 @@ class CNRancidProxy extends CNShell {
 
   // Public methods here
   private setupRoutes() {
-    this.simpleReadRoute(ROUTE_SWITCH, async id => this.get(id), true, false);
+    this.simpleReadRoute(
+      ROUTE_SWITCH,
+      async id => this.get(id),
+      true,
+      false,
+      {},
+      { "content-type": "text/plain;charset=utf-8" },
+    );
   }
 
   private async get(switchName: string): Promise<string> {
