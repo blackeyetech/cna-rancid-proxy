@@ -149,6 +149,11 @@ class CNRancidProxy extends CNShell {
       // Strip off the FQDN
       let switchName = file.replace(this._fqdn, "");
 
+      // Ignore the switch names ending in "".new"
+      if (switchName.endsWith(".new")) {
+        continue;
+      }
+
       // Check if it matches any of the regexs
       for (let regEx of regExs) {
         if (regEx.test(switchName)) {
