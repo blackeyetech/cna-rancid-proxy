@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "name": "cna-rancid-proxy",
   "description": "A Cloud Native Application for a RANCID proxy",
   "main": "./dist/main.js",
