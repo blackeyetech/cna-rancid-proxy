@@ -12,6 +12,8 @@ const ROUTE_BASE = "/api";
 
 const ROUTE_SWITCH = `${ROUTE_BASE}/switch`;
 
+const QRY_REGEX = "regex";
+
 // HTTP Prop Patterns here
 
 process.on("unhandledRejection", error => {
@@ -63,6 +65,13 @@ class CNRancidProxy extends CNShell {
       {},
       "text/plain",
     );
+
+    this.simpleReadRoute(
+      ROUTE_SWITCH,
+      async (_, query) => this.getList(query),
+      false,
+      false,
+    );
   }
 
   private async get(switchName: string): Promise<string> {
@@ -86,6 +95,73 @@ class CNRancidProxy extends CNShell {
     }
 
     return config;
+  }
+
+  private async getList(query: {
+    [key: string]: string | string[];
+  }): Promise<string[]> {
+    // Default regex is for all switches
+    let qryRegExs = query[QRY_REGEX] === undefined ? ".*" : query[QRY_REGEX];
+
+    this.debug("Searching for switches matching: %j", qryRegExs);
+
+    let regExs: RegExp[] = [];
+
+    // Check if there was one (string) or multiple regexs (string[]) passed
+    try {
+      if (typeof qryRegExs === "string") {
+        regExs.push(new RegExp(qryRegExs));
+      } else {
+        // Loop through each filter
+        for (let qryRegEx of qryRegExs) {
+          regExs.push(new RegExp(qryRegEx));
+        }
+      }
+    } catch (e) {
+      this.error(e);
+
+      let error: HttpError = {
+        status: 400,
+        message: `There was an issue with your regEx: (${e})`,
+      };
+
+      throw error;
+    }
+
+    let switches: string[] = [];
+    let dir: string[];
+
+    try {
+      dir = fs.readdirSync(this._cfgDir);
+    } catch (e) {
+      this.error(e);
+
+      let error: HttpError = {
+        status: 404,
+        message: "There was an issue getting the switch list",
+      };
+
+      throw error;
+    }
+
+    // Check for match with each file name returned
+    for (let file of dir) {
+      // Strip off the FQDN
+      let switchName = file.replace(this._fqdn, "");
+
+      // Check if it matches any of the regexs
+      for (let regEx of regExs) {
+        if (regEx.test(switchName)) {
+          if (switches.includes(switchName)) {
+            continue;
+          }
+
+          switches.push(switchName);
+        }
+      }
+    }
+
+    return switches;
   }
 }
 
