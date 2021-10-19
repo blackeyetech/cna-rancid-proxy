@@ -59,7 +59,7 @@ class CNRancidProxy extends CNShell {
       true,
       false,
       {},
-      { "content-type": "text/plain;charset=utf-8" },
+      "text/plain",
     );
   }
 
@@ -70,7 +70,8 @@ class CNRancidProxy extends CNShell {
     this.debug("Searching for switch config", fileName);
 
     try {
-      config = fs.readFileSync(fileName, "utf-8");
+      config = fs.readFileSync(fileName, "utf8");
+      config = config.replace(/\n/g, "\r\n");
     } catch (e) {
       this.error(e);
 
