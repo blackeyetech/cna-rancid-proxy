@@ -28,7 +28,9 @@ class CNRancidProxy extends CNShell {
   constructor(name: string) {
     super(name);
 
-    this._cfgDir = this.getRequiredCfg(CFG_RANCID_CFG_DIR);
+    let dir = this.getRequiredCfg(CFG_RANCID_CFG_DIR);
+    this._cfgDir = dir.replace(/(\/)*$/, ""); // Strip any trailing slashes
+
     this._fqdn = this.getCfg(CFG_RANCID_FQDN, "");
 
     if (this._fqdn.length) {
